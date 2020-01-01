@@ -1,16 +1,17 @@
 package APO.projekt;
 
 import javafx.application.Platform;
+import javafx.geometry.Orientation;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -42,12 +43,21 @@ public class MainWindow {
 
     Stage mainStage;
     private List<MenuItem> menuOptions;
-    ImageView imageView;
 
     /**
      * Obiekt zawierający informacje o otwartym pliku.
      */
     private Picture openedFileData;
+
+    /**
+     * Obiekty odpowiadające za wyświetlanie obrazu.
+     */
+    private Pane imagePane;
+    private ScrollPane scrollPane;
+    private ImageView imageView;
+    private Slider zoomSlider;
+    private HBox statusBar;
+    private Label imageSize;
 
 
     /**
@@ -58,6 +68,7 @@ public class MainWindow {
         this.mainStage = mainStage;
         menuOptions = new ArrayList<>();
         buildWindow();
+        refreshWindow();
     }
 
     /**
@@ -76,7 +87,10 @@ public class MainWindow {
 
     private Scene createScene() {
         createMenu();
-        VBox mainVBox = new VBox(menuBar);
+        createScrollPane();
+        Separator separator = new Separator();
+        createStatusBar();
+        VBox mainVBox = new VBox(menuBar, scrollPane, separator, statusBar);
         return new Scene(mainVBox, 1000, 600);
     }
 
@@ -161,12 +175,12 @@ public class MainWindow {
         Image image;
         FileInputStream fileInputStream = new FileInputStream(file);
         image = new Image(fileInputStream);
-        System.out.println("Otwieram" + image);
+        System.out.println("Otwieram" + image + " : " + file);
 
         imageView.setEffect(null);
         imageView.setPreserveRatio(true);
         imageView.setImage(image);
-        imageView.fitHeightProperty();
+        imageView.fitHeightProperty().bind(zoomSlider.valueProperty().multiply(image.getHeight()));
         openedFileData = new Picture(file, imageView);
         lastDirectory = file.getParentFile();
     }
@@ -185,6 +199,87 @@ public class MainWindow {
         return closeFile;
     }
 
+    public void setImage(Image image) {
+        imageView.setImage(image);
+    }
 
+    /**
+     * Tworzy zawartość okna głównego z otwartym obrazem.
+     */
+    private void createScrollPane() {
+        imagePane = new Pane(imageView);
+        scrollPane = new ScrollPane(imagePane);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scrollPane.prefWidthProperty().bind(mainStage.widthProperty());
+        scrollPane.prefHeightProperty().bind(mainStage.heightProperty());
+        //scrollPane.addEventFilter(ScrollEvent.SCROLL, this::handleZoom);
+        //scrollPane.setOnDragOver(this::handleFileDrag);
+        //scrollPane.setOnDragDropped(this::handleFileDropped);
+    }
+
+    /**
+     * Odświeża zmiany i wczytuje ponownie, które wymagają ponownego
+     * załadowania po otwarciu lub zamknięciu pliku.
+     */
+    private void refreshWindow() {
+        refreshWindowTitle();
+        //enabledWhenFileOpended.forEach(menuItem -> menuItem.setDisable(openedFileData == null));
+        //refreshStatusBar();
+        //resetSelection();
+
+        //closeOpenedWindows();
+    }
+
+    private void refreshWindowTitle() {
+        if (openedFileData != null) {
+            mainStage.setTitle("APO-projekt - " + openedFileData.getFile().getName());
+        } else {
+            System.out.println("null");
+            mainStage.setTitle("APO-projekt");
+        }
+    }
+
+    /**
+     * Tworzy slider obsługujący powiększanie i pomniejszanie obrazu.
+     *
+     * @return <tt>Label</tt> z wartością zoomu.
+     */
+    private Label createZoomSlider() {
+        zoomSlider = new Slider();
+        zoomSlider.setMin(0.1);
+        zoomSlider.setValue(1);
+        zoomSlider.setMax(4);
+        Label sliderValue = new Label((int) (zoomSlider.getValue() * 100) + "%");
+        zoomSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            sliderValue.setText((int) (zoomSlider.getValue() * 100) + "%");
+        });
+        return sliderValue;
+    }
+
+    /**
+     * Tworzy pasek statusu na dole ekranu.
+     */
+    private void createStatusBar() {
+        Label sliderValue = createZoomSlider();
+        Separator separator = new Separator(Orientation.VERTICAL);
+        imageSize = new Label("");
+        statusBar = new HBox(imageSize, separator, sliderValue, zoomSlider);
+        statusBar.setMinHeight(25);
+        statusBar.setMaxHeight(25);
+        statusBar.setAlignment(Pos.CENTER_RIGHT);
+    }
+
+    /**
+     * Odświeża wartość zoomu na pasku statusu.
+     */
+    private void refreshImageSize() {
+        if (openedFileData != null) {
+            Image openedImage = openedFileData.getImageView().getImage();
+            imageSize.setText((int) openedImage.getWidth() + "x" + (int) openedImage.getHeight());
+        } else {
+            imageSize.setText("");
+        }
+    }
 
 }

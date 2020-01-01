@@ -1,5 +1,6 @@
 package APO.projekt;
 
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 import java.io.File;
@@ -22,4 +23,19 @@ public class Picture {
         this.imageView = imageView;
     }
 
+    public Picture(ImageView imageView) {
+        this.imageView = imageView;
+    }
+
+    public File getFile() {
+        return file;
+    }
+
+    public void setImage(Image image) {
+        imageView.setImage(image);
+    }
+
+    public ImageView getImageView() {
+        return imageView;
+    }
 }
