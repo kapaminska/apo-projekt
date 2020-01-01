@@ -100,7 +100,7 @@ public class MainWindow {
     private void createMenu() {
         menuBar = new MenuBar();
         imageView = new ImageView();
-        menuBar.getMenus().addAll(createFileMenu());
+        menuBar.getMenus().addAll(createFileMenu(), createOperationsMenu());
     }
 
     /**
@@ -182,6 +182,7 @@ public class MainWindow {
         imageView.setImage(image);
         imageView.fitHeightProperty().bind(zoomSlider.valueProperty().multiply(image.getHeight()));
         openedFileData = new Picture(file, imageView);
+        System.out.println("openedFileData: " + openedFileData);
         lastDirectory = file.getParentFile();
     }
 
@@ -197,6 +198,22 @@ public class MainWindow {
             imageView.setImage(null);
         });
         return closeFile;
+    }
+
+    /**
+     * Tworzy menu z operacjami na obrazie.
+     *
+     * @return menu operacji
+     */
+    private Menu createOperationsMenu() {
+        Menu operationsMenu = new Menu("Operacje");
+        MenuItem convert = createConvertItem();
+        MenuItem compare = createCompareItem();
+
+        SeparatorMenuItem separator1 = new SeparatorMenuItem();
+
+        operationsMenu.getItems().addAll(convert, separator1, compare);
+        return operationsMenu;
     }
 
     public void setImage(Image image) {
@@ -280,6 +297,26 @@ public class MainWindow {
         } else {
             imageSize.setText("");
         }
+    }
+
+    private MenuItem createConvertItem() {
+        MenuItem convert = new MenuItem("Eksportuj do CSV");
+        menuOptions.add(convert);
+        convert.setOnAction(event -> {
+            Image image = ImageUtils.toGrayscale(imageView.getImage());
+            openedFileData.setImage(image);
+        });
+        return convert;
+    }
+
+    private MenuItem createCompareItem() {
+        MenuItem compare = new MenuItem("Porównaj obrazy");
+        menuOptions.add(compare);
+        compare.setOnAction(event -> {
+            Image image = ImageUtils.toGrayscale(imageView.getImage());
+            openedFileData.setImage(image);
+        });
+        return compare;
     }
 
 }
