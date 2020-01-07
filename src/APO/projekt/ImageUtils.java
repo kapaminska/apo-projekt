@@ -3,6 +3,10 @@ package APO.projekt;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritablePixelFormat;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
@@ -10,10 +14,9 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.ByteBuffer;
 
 /**
@@ -51,20 +54,33 @@ public class ImageUtils {
         return new Image(new ByteArrayInputStream(buffer.toArray()));
     }
 
-    public static void convertToCSV(File file) throws IOException {
+    public static void export (File file) throws IOException {
 
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet sheet = workbook.createSheet("Obraz");
         BufferedImage image = ImageIO.read(file);
-        int arrayHeight = image.getHeight();
-        int arrayWidth = image.getWidth();
-        int[][] pixels = new int[arrayHeight][arrayWidth];
 
+        int rownum = 0;
         for (int i = 0; i < image.getHeight(); i++) {
+            XSSFRow row = sheet.createRow(rownum++);
+            int cellnum = 0;
             for (int j = 0; j < image.getWidth(); j++) {
                 int color = image.getRGB(j, i);
-                pixels[i][j] = color;
-                System.out.println(color);
+                Color col = new Color(color, true);
+                XSSFCell cell = row.createCell(cellnum++);
+                cell.setCellValue(col.getRed());
             }
         }
 
+        try {
+            FileOutputStream out = new FileOutputStream(new File("result.xlsx"));
+            workbook.write(out);
+            out.close();
+            System.out.println("result.xlsx written successfully on disk.");
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+
 }

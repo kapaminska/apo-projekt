@@ -39,6 +39,7 @@ public class MainWindow {
      * Przechowuje ścieżkę do katalogu, z którego pochodzi ostatnio otwarty obraz.
      */
     private File lastDirectory;
+    private File picFile;
 
 
     Stage mainStage;
@@ -152,6 +153,7 @@ public class MainWindow {
         File file;
         try {
             file = fileChooser.showOpenDialog(mainStage);
+            picFile = file;
             System.out.println(file);
         } catch (Exception e) {
             throw(e);
@@ -166,7 +168,6 @@ public class MainWindow {
 
         }
     }
-
 
     /**
      * Otwórz obraz
@@ -201,18 +202,18 @@ public class MainWindow {
     }
 
     /**
-     * Tworzy menu z operacjami na obrazie.
+     * Menu z operacjami na obrazie
      *
-     * @return menu operacji
      */
     private Menu createOperationsMenu() {
         Menu operationsMenu = new Menu("Operacje");
         MenuItem convert = createConvertItem();
+        MenuItem importItem = createImportItem();
         MenuItem compare = createCompareItem();
 
         SeparatorMenuItem separator1 = new SeparatorMenuItem();
 
-        operationsMenu.getItems().addAll(convert, separator1, compare);
+        operationsMenu.getItems().addAll(convert, importItem, separator1, compare);
         return operationsMenu;
     }
 
@@ -235,17 +236,8 @@ public class MainWindow {
         //scrollPane.setOnDragDropped(this::handleFileDropped);
     }
 
-    /**
-     * Odświeża zmiany i wczytuje ponownie, które wymagają ponownego
-     * załadowania po otwarciu lub zamknięciu pliku.
-     */
     private void refreshWindow() {
         refreshWindowTitle();
-        //enabledWhenFileOpended.forEach(menuItem -> menuItem.setDisable(openedFileData == null));
-        //refreshStatusBar();
-        //resetSelection();
-
-        //closeOpenedWindows();
     }
 
     private void refreshWindowTitle() {
@@ -259,8 +251,6 @@ public class MainWindow {
 
     /**
      * Tworzy slider obsługujący powiększanie i pomniejszanie obrazu.
-     *
-     * @return <tt>Label</tt> z wartością zoomu.
      */
     private Label createZoomSlider() {
         zoomSlider = new Slider();
@@ -300,11 +290,31 @@ public class MainWindow {
     }
 
     private MenuItem createConvertItem() {
-        MenuItem convert = new MenuItem("Eksportuj do CSV");
+        MenuItem convert = new MenuItem("Eksport");
         menuOptions.add(convert);
         convert.setOnAction(event -> {
-            Image image = ImageUtils.toGrayscale(imageView.getImage());
-            openedFileData.setImage(image);
+            try {
+                ImageUtils.export(picFile);
+            } catch (IOException e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Wystąpił błąd!");
+                alert.showAndWait();
+            }
+        });
+        return convert;
+    }
+
+    private MenuItem createImportItem() {
+        MenuItem convert = new MenuItem("Import");
+        menuOptions.add(convert);
+        convert.setOnAction(event -> {
+            try {
+                ImageUtils.export(picFile);
+            } catch (IOException e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Wystąpił błąd!");
+                alert.showAndWait();
+            }
         });
         return convert;
     }
