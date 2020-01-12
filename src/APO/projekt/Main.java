@@ -8,9 +8,11 @@ import javafx.stage.Stage;
  */
 public class Main extends Application {
 
+    public MainWindow mainWindow;
+
     @Override
     public void start(Stage primaryStage) throws Exception {
-        MainWindow mainWindow = new MainWindow(primaryStage);
+        mainWindow = new MainWindow(primaryStage);
     }
 
 

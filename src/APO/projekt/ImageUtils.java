@@ -3,6 +3,7 @@ package APO.projekt;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritablePixelFormat;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -81,6 +82,36 @@ public class ImageUtils {
         catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static File importFile (File openedFile) {
+        File outputfile = new File("resultImage.jpg");
+        try {
+            FileInputStream file = new FileInputStream(openedFile);
+            XSSFWorkbook workbook = new XSSFWorkbook(file);
+            XSSFSheet sheet = workbook.getSheetAt(0);
+
+            int numOfRows = sheet.getLastRowNum();
+            Row firstRow = sheet.getRow(0);
+            int numOfCells = firstRow.getLastCellNum();
+            System.out.println("numOfRows " + numOfRows + " ,numOfCells: " + numOfCells);
+            BufferedImage resultImage = new BufferedImage(numOfCells, numOfRows, BufferedImage.TYPE_INT_RGB);
+            for (int i = 0; i < numOfRows; i++) {
+                Row row = sheet.getRow(i);
+                for (int j = 0; j < numOfCells; j++) {
+                    org.apache.poi.ss.usermodel.Cell cell = row.getCell(j);
+                    int value =  (int)cell.getNumericCellValue();
+                    Color col = new Color(value, value, value);
+                    resultImage.setRGB(j, i, col.getRGB());
+                }
+            }
+            ImageIO.write(resultImage, "jpg", outputfile);
+            file.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return outputfile;
     }
 
 }

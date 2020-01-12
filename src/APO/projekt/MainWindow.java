@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static APO.projekt.ImageUtils.importFile;
+
 /**
  * Created by Aleksandra on 01.01.2020.
  */
@@ -33,7 +35,8 @@ public class MainWindow {
     /**
      * Lista akceptowanych rozszerzeń.
      */
-    private static final List<String> ACCEPTED_EXTENSIONS = Arrays.asList("*.jpg", "*.jpeg", "*.bmp", "*.png", "*.tif");
+    private static final List<String> ACCEPTED_EXTENSIONS_PIC = Arrays.asList("*.jpg", "*.jpeg", "*.bmp", "*.png", "*.tif");
+    private static final List<String> ACCEPTED_EXTENSIONS_EXCEL = Arrays.asList("*.xlsx");
 
     /**
      * Przechowuje ścieżkę do katalogu, z którego pochodzi ostatnio otwarty obraz.
@@ -122,22 +125,51 @@ public class MainWindow {
      * Menu otwarcia pliku.
      */
     private MenuItem createOpenFileItem() {
-        FileChooser fileChooser = createOpenFileChooser();
+        FileChooser fileChooser = createOpenFileChooser(1);
         MenuItem openFile = new MenuItem("Otwórz");
 
         KeyCombination keyCodeCombination = new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN);
         openFile.setAccelerator(keyCodeCombination);
 
         openFile.setOnAction(event -> {
-            handleFileOpenAction(fileChooser);
+            handleFileOpenAction(fileChooser, 1);
         });
         return openFile;
     }
 
-    private FileChooser createOpenFileChooser() {
+    /**
+     * Menu importu pliku.
+     */
+    private MenuItem createImportItem() {
+        FileChooser fileChooser = createOpenFileChooser(2);
+        MenuItem convert = new MenuItem("Import");
+        menuOptions.add(convert);
+        convert.setOnAction(event -> {
+            try {
+                handleFileOpenAction(fileChooser, 2);
+                Image image;
+                FileInputStream fileInputStream = new FileInputStream(picFile);
+                image = new Image(fileInputStream);
+                imageView.setEffect(null);
+                imageView.setPreserveRatio(true);
+                imageView.setImage(image);
+                imageView.fitHeightProperty().bind(zoomSlider.valueProperty().multiply(image.getHeight()));
+                openedFileData = new Picture(picFile, imageView);
+                lastDirectory = picFile.getParentFile();
+            } catch (Exception e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Wystąpił błąd!");
+                alert.showAndWait();
+            }
+        });
+        return convert;
+    }
+
+    static FileChooser createOpenFileChooser(int option) {
+        List<String> extentions = option == 1 ? ACCEPTED_EXTENSIONS_PIC : ACCEPTED_EXTENSIONS_EXCEL;
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Otwórz plik");
-        FileChooser.ExtensionFilter extensionFilter = new FileChooser.ExtensionFilter("Obrazy", ACCEPTED_EXTENSIONS);
+        FileChooser.ExtensionFilter extensionFilter = new FileChooser.ExtensionFilter("Obrazy", extentions);
         fileChooser.getExtensionFilters().add(extensionFilter);
         return fileChooser;
     }
@@ -145,7 +177,7 @@ public class MainWindow {
     /**
      * Obsługuje akcję otwarcia pliku.
      */
-    private void handleFileOpenAction(FileChooser fileChooser)  {
+    private void handleFileOpenAction(FileChooser fileChooser, int option)  {
         if (lastDirectory != null) {
             fileChooser.setInitialDirectory(lastDirectory);
         }
@@ -161,7 +193,12 @@ public class MainWindow {
 
         if (file != null) {
             try {
-                openImage(file);
+                // option 1 = otwieranie zdjecia, option 2 = otwieranie pliku xmlx
+                if (option == 1) {
+                    openImage(file);
+                } else if (option == 2) {
+                    picFile = importFile(file);
+                }
             } catch (java.io.IOException e) {
                 System.out.println("Blad otwierania pliku.");
             }
@@ -291,21 +328,6 @@ public class MainWindow {
 
     private MenuItem createConvertItem() {
         MenuItem convert = new MenuItem("Eksport");
-        menuOptions.add(convert);
-        convert.setOnAction(event -> {
-            try {
-                ImageUtils.export(picFile);
-            } catch (IOException e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Wystąpił błąd!");
-                alert.showAndWait();
-            }
-        });
-        return convert;
-    }
-
-    private MenuItem createImportItem() {
-        MenuItem convert = new MenuItem("Import");
         menuOptions.add(convert);
         convert.setOnAction(event -> {
             try {
