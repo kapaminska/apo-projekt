@@ -43,6 +43,7 @@ public class MainWindow {
      */
     private File lastDirectory;
     private File picFile;
+    private File picFileCompare;
 
 
     Stage mainStage;
@@ -51,7 +52,7 @@ public class MainWindow {
     /**
      * Obiekt zawierający informacje o otwartym pliku.
      */
-    private Picture openedFileData;
+    private Picture openedFileData, comparisonPicture;
 
     /**
      * Obiekty odpowiadające za wyświetlanie obrazu.
@@ -268,9 +269,6 @@ public class MainWindow {
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scrollPane.prefWidthProperty().bind(mainStage.widthProperty());
         scrollPane.prefHeightProperty().bind(mainStage.heightProperty());
-        //scrollPane.addEventFilter(ScrollEvent.SCROLL, this::handleZoom);
-        //scrollPane.setOnDragOver(this::handleFileDrag);
-        //scrollPane.setOnDragDropped(this::handleFileDropped);
     }
 
     private void refreshWindow() {
@@ -314,18 +312,6 @@ public class MainWindow {
         statusBar.setAlignment(Pos.CENTER_RIGHT);
     }
 
-    /**
-     * Odświeża wartość zoomu na pasku statusu.
-     */
-    private void refreshImageSize() {
-        if (openedFileData != null) {
-            Image openedImage = openedFileData.getImageView().getImage();
-            imageSize.setText((int) openedImage.getWidth() + "x" + (int) openedImage.getHeight());
-        } else {
-            imageSize.setText("");
-        }
-    }
-
     private MenuItem createConvertItem() {
         MenuItem convert = new MenuItem("Eksport");
         menuOptions.add(convert);
@@ -342,11 +328,21 @@ public class MainWindow {
     }
 
     private MenuItem createCompareItem() {
+        FileChooser fileChooser = createOpenFileChooser(1);
         MenuItem compare = new MenuItem("Porównaj obrazy");
         menuOptions.add(compare);
         compare.setOnAction(event -> {
-            Image image = ImageUtils.toGrayscale(imageView.getImage());
-            openedFileData.setImage(image);
+            try {
+                handleFileOpenAction(fileChooser, 1);
+                Image image;
+                FileInputStream fileInputStream = new FileInputStream(picFile);
+                image = new Image(fileInputStream);
+                PreviewWindow previewWindow = new PreviewWindow(image);
+            } catch (Exception e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Wystąpił błąd!");
+                alert.showAndWait();
+            }
         });
         return compare;
     }
