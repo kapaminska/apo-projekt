@@ -77,7 +77,7 @@ public class MainWindow {
     }
 
     /**
-     * Buduje główne okno programu.
+     * Funkcje budujące główne okno programu.
      */
     private void buildWindow() {
         createMainStage();
@@ -271,6 +271,10 @@ public class MainWindow {
         scrollPane.prefHeightProperty().bind(mainStage.heightProperty());
     }
 
+    /**
+     * Odświeża obraz
+     */
+
     private void refreshWindow() {
         refreshWindowTitle();
     }
@@ -311,6 +315,10 @@ public class MainWindow {
         statusBar.setMaxHeight(25);
         statusBar.setAlignment(Pos.CENTER_RIGHT);
     }
+
+    /**
+     * Tworzy przycisk eksportujący obraz do Excela
+     */
 
     private MenuItem createConvertItem() {
         MenuItem convert = new MenuItem("Eksport");

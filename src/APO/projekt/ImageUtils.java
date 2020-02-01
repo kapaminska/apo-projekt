@@ -10,14 +10,14 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfByte;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
@@ -27,6 +27,10 @@ public class ImageUtils {
 
     static int rownum = 0;
 
+    /*
+    * Zamienia Image na obiekt Mat
+    * @param: Image - otwarty obiekt
+     */
     public static Mat imageToMat(Image image) {
         int width = (int) image.getWidth();
         int height = (int) image.getHeight();
@@ -41,6 +45,11 @@ public class ImageUtils {
 
         return mat;
     }
+
+    /*
+    * Sprawdza, czy obraz jest szaroodcieniowy
+    * @params BufferedImage - obraz zapisany w klasie BufferedImage
+     */
 
     public static boolean isGrayscale(BufferedImage image) {
 
@@ -57,12 +66,13 @@ public class ImageUtils {
         return true;
     }
 
-    public static Image mat2Image(Mat mat) {
-        MatOfByte buffer = new MatOfByte();
-        Imgcodecs.imencode(".png", mat, buffer);
-
-        return new Image(new ByteArrayInputStream(buffer.toArray()));
-    }
+    /*
+    * Funkcja zapisująca jeden z kanałów do Excela
+    * @param channel - wybrany kanał
+    * @param image - obraz, na którym wykonywana będzie operacja
+    * @param sheet - skoroszyt, do którego będą zapisane dane
+    * @param workbook - plik Excela, do którego będą zapisane dane
+     */
 
     public static void writeChannel (String channel, BufferedImage image, XSSFSheet sheet, XSSFWorkbook workbook) {
 
@@ -87,6 +97,11 @@ public class ImageUtils {
             }
         }
     }
+
+    /*
+    * Funkcja eksportująca obraz do Excela
+    * @param file - ścieżka do pliku
+     */
 
     public static void export (File file) throws IOException {
 
@@ -119,9 +134,10 @@ public class ImageUtils {
         }
     }
 
-    public static boolean isNumeric(String str) {
-        return str.matches("-?\\d+(\\.\\d+)?");  //match a number with optional '-' and decimal.
-    }
+    /*
+    * Funkcja importująca obraz zapisany w Excelu do pliku
+    * @param openedFile - ścieżka do pliku
+     */
 
     public static File importFile (File openedFile) {
 
@@ -168,6 +184,11 @@ public class ImageUtils {
         }
         return outputfile;
     }
+
+    /*
+    * Funkcja porównująca obrazy
+    * @Param file - ścieżka do pliku
+     */
 
     public static void comparePictures (File file) throws IOException {
 
